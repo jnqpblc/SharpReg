@@ -1,11 +1,11 @@
 ﻿using System;
-using System.IO;
 using Microsoft.Win32;
 
 namespace SharpSvc
 {
 	class SharpSvc
 	{
+		// https://docs.microsoft.com/en-us/dotnet/api/microsoft.win32.registrykey?view=netframework-4.6.1
 		static void Main(string[] args)
 		{
 			if (args == null || args.Length < 1)
@@ -13,14 +13,14 @@ namespace SharpSvc
 				printUsage();
 			}
 
-			if ((args[0] == "--Query") && (args.Length == 4))
+			if ((args[0].ToUpper() == "--QUERY") && (args.Length == 4))
 			{
 				string Computer = args[1];
 				string KeyName = args[2];
 				string ValueName = args[3];
 				Query(Computer, KeyName, ValueName);
 			}
-			else if ((args[0] == "--Add") && (args.Length == 6))
+			else if ((args[0].ToUpper() == "--ADD") && (args.Length == 6))
 			{
 				string Computer = args[1];
 				string KeyName = args[2];
@@ -29,7 +29,7 @@ namespace SharpSvc
 				string ValueData = args[5];
 				Add(Computer, KeyName, DataType, ValueName, ValueData);
 			}
-			else if ((args[0] == "--Delete") && (args.Length == 4))
+			else if ((args[0].ToUpper() == "--DELETE") && (args.Length == 4))
 			{
 				string Computer = args[1];
 				string KeyName = args[2];
@@ -98,7 +98,17 @@ namespace SharpSvc
 				}
 				else
 				{
-					Console.WriteLine("\n    {0}    REG_{1}    {2}", ValueName, key.GetValueKind(ValueName).ToString().ToUpper(), key.GetValue(ValueName).ToString());
+					if (key.GetValueKind(ValueName).ToString().ToUpper() == "BINARY")
+					{
+						byte[] BinData = (byte[])key.GetValue(ValueName);
+						string BinString = BitConverter.ToString(BinData).Replace("-", "");;
+						Console.WriteLine("\n    {0}    REG_{1}    {2}", ValueName, key.GetValueKind(ValueName).ToString().ToUpper(), BinString.ToString());
+					}
+					else
+					{
+						Console.WriteLine("\n    {0}    REG_{1}    {2}", ValueName, key.GetValueKind(ValueName).ToString().ToUpper(), key.GetValue(ValueName).ToString());
+					}
+					
 				}
 				hive.Close();
 			}
