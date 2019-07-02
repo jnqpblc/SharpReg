@@ -102,7 +102,7 @@ namespace SharpSvc
 				}
 				hive.Close();
 			}
-			catch (IOException e)
+			catch (Exception e)
 			{
 				Console.WriteLine("{0}: {1}", e.GetType().Name, e.Message);
 				return;
@@ -136,7 +136,7 @@ namespace SharpSvc
 					NewKey.SetValue(ValueName, ValueByte);
 				}
 			}
-			catch (IOException e)
+			catch (Exception e)
 			{
 				Console.WriteLine("{0}: {1}", e.GetType().Name, e.Message);
 				return;
@@ -187,7 +187,7 @@ namespace SharpSvc
 					printUsage();
 				}
 			}
-			catch (IOException e)
+			catch (Exception e)
 			{
 				Console.WriteLine("{0}: {1}", e.GetType().Name, e.Message);
 				return;
