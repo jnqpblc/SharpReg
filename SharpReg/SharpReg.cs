@@ -1,11 +1,15 @@
 ﻿using System;
+using System.IO;
+using System.Net;
 using Microsoft.Win32;
+using System.Runtime.InteropServices;
 
 namespace SharpSvc
 {
 	class SharpSvc
 	{
 		// https://docs.microsoft.com/en-us/dotnet/api/microsoft.win32.registrykey?view=netframework-4.6.1
+		// https://social.msdn.microsoft.com/Forums/vstudio/en-US/e7b672e6-bd55-41aa-b154-8a51e7b9159f/how-to-connect-and-access-a-drive-in-remote-server-from-my-local-machine-using-credentials-in-cnet?forum=csharpgeneral
 		static void Main(string[] args)
 		{
 			if (args == null || args.Length < 1)
@@ -41,6 +45,7 @@ namespace SharpSvc
 				printUsage();
 			}
 		}
+
 		static void printUsage()
 		{
 			Console.WriteLine("\n[-] Usage: \n\t--Query <Computer|local|hostname|ip> <KeyName|HKLM\\SOFTWARE\\Microsoft\\Policies> <ValueName|all|ScriptBlockLogging>\n" +
@@ -101,14 +106,14 @@ namespace SharpSvc
 					if (key.GetValueKind(ValueName).ToString().ToUpper() == "BINARY")
 					{
 						byte[] BinData = (byte[])key.GetValue(ValueName);
-						string BinString = BitConverter.ToString(BinData).Replace("-", "");;
+						string BinString = BitConverter.ToString(BinData).Replace("-", ""); ;
 						Console.WriteLine("\n    {0}    REG_{1}    {2}", ValueName, key.GetValueKind(ValueName).ToString().ToUpper(), BinString.ToString());
 					}
 					else
 					{
 						Console.WriteLine("\n    {0}    REG_{1}    {2}", ValueName, key.GetValueKind(ValueName).ToString().ToUpper(), key.GetValue(ValueName).ToString());
 					}
-					
+
 				}
 				hive.Close();
 			}
@@ -118,6 +123,7 @@ namespace SharpSvc
 				return;
 			}
 		}
+
 		static void Add(string Computer, string KeyName, string DataType, string ValueName, string ValueData)
 		{
 			try
@@ -152,6 +158,7 @@ namespace SharpSvc
 				return;
 			}
 		}
+
 		static void Delete(string Computer, string KeyName, string ValueName)
 		{
 			try
@@ -179,7 +186,7 @@ namespace SharpSvc
 					}
 
 				}
-				else if (ValueName != null) 
+				else if (ValueName != null)
 				{
 					try
 					{
