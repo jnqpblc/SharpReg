@@ -9,6 +9,7 @@ namespace SharpSvc
 	class SharpSvc
 	{
 		// https://docs.microsoft.com/en-us/dotnet/api/microsoft.win32.registrykey?view=netframework-4.6.1
+		// https://stackoverflow.com/questions/28739477/accessing-a-remote-registry-with-local-credentials-of-the-remote-machine-on-th
 		// https://social.msdn.microsoft.com/Forums/vstudio/en-US/e7b672e6-bd55-41aa-b154-8a51e7b9159f/how-to-connect-and-access-a-drive-in-remote-server-from-my-local-machine-using-credentials-in-cnet?forum=csharpgeneral
 		static void Main(string[] args)
 		{
