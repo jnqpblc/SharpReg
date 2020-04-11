@@ -62,11 +62,11 @@ namespace SharpSvc
 				RegistryKey hive;
 				if (Computer.ToUpper() != "LOCAL")
 				{
-					hive = RegistryKey.OpenRemoteBaseKey(RegistryHive.LocalMachine, Computer, RegistryView.Registry64);
+					hive = RegistryKey.OpenRemoteBaseKey(RegistryHive.LocalMachine, Computer, RegistryView.Default);
 				}
 				else
 				{
-					hive = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+					hive = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default);
 				}
 				var key = hive.OpenSubKey(KeyName);
 				if (ValueName.ToUpper() == "ALL")
@@ -132,11 +132,11 @@ namespace SharpSvc
 				RegistryKey hive;
 				if (Computer.ToUpper() != "LOCAL")
 				{
-					hive = RegistryKey.OpenRemoteBaseKey(RegistryHive.LocalMachine, Computer, RegistryView.Registry64);
+					hive = RegistryKey.OpenRemoteBaseKey(RegistryHive.LocalMachine, Computer, RegistryView.Default);
 				}
 				else
 				{
-					hive = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+					hive = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default);
 				}
 				RegistryKey NewKey = hive.CreateSubKey(KeyName);
 				if (DataType.ToUpper() == "SZ")
@@ -167,11 +167,11 @@ namespace SharpSvc
 				RegistryKey hive;
 				if (Computer.ToUpper() != "LOCAL")
 				{
-					hive = RegistryKey.OpenRemoteBaseKey(RegistryHive.LocalMachine, Computer, RegistryView.Registry64);
+					hive = RegistryKey.OpenRemoteBaseKey(RegistryHive.LocalMachine, Computer, RegistryView.Default);
 				}
 				else
 				{
-					hive = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+					hive = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default);
 				}
 				if (ValueName.ToUpper() == "KEY")
 				{
