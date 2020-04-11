@@ -57,7 +57,7 @@ namespace SharpSvc
 
 		static void printUsage()
 		{
-			Console.WriteLine("\n[-] Usage: \n\t--Query <Computer|local|hostname|ip> <KeyName|SOFTWARE\\Microsoft\\Policies> <ValueName|count|all|recurse|grep|ScriptBlockLogging> <grep search term>\n" +
+			Console.WriteLine("\n[-] Usage: \n\t--Query <Computer|local|hostname|ip> <KeyName|SOFTWARE\\Microsoft\\Policies> <ValueName|count|all|recurse|grep|ScriptBlockLogging> <SearchTeam|Grep() Only|E.g. \"Google\">\n" +
 				"\n\t--Add <Computer|local|hostname|ip> <KeyName|SOFTWARE\\Microsoft\\Policies> <DataType|SZ|EXPAND_SZ|DWORD|QWORD|BINARY> <ValueName|YourValueName> <ValueData|YourValueData>\n" +
 				"\n\t--Delete <Computer|local|hostname|ip> <KeyName|SOFTWARE\\Microsoft\\Policies> <ValueName|all|ScriptBlockLogging>\n");
 			System.Environment.Exit(1);
@@ -79,9 +79,13 @@ namespace SharpSvc
 				var key = hive.OpenSubKey(KeyName);
 				if (ValueName.ToUpper() == "COUNT")
 				{
-					// Counts some but fails on the below, if it finds a space in the name?
-					// [!] IOException: The specified registry key does not exist.
-					Console.WriteLine("\nThere are {0} subkeys under {1}.", key.SubKeyCount.ToString(), key.Name);
+					try 
+					{
+						Console.WriteLine("\nThere are {0} subkeys under {1}.", key.SubKeyCount.ToString(), key.Name);
+						hive.Close();
+						return;
+					}
+					catch { } // Used to ignore exceptions
 				}
 				if (ValueName.ToUpper() == "ALL")
 				{
@@ -95,6 +99,8 @@ namespace SharpSvc
 					{
 						Console.WriteLine("{0}\\{1}", KeyName, oSubKey);
 					}
+					hive.Close();
+					return;
 				}
 				else if (ValueName.ToUpper() == "RECURSE")
 				{
@@ -115,6 +121,8 @@ namespace SharpSvc
 						}
 						Console.WriteLine();
 					}
+					hive.Close();
+					return;
 				}
 				else if (ValueName.ToUpper() == "GREP")
 				{
@@ -123,7 +131,11 @@ namespace SharpSvc
 					{
 						if (oVal.Contains(SearchTeam))
 						{
-							Console.WriteLine("    {0}    REG_{1}    {2}", oVal, key.GetValueKind(oVal).ToString().ToUpper(), key.GetValue(oVal).ToString());
+							try
+							{
+								Console.WriteLine("    {0}    REG_{1}    {2}", oVal, key.GetValueKind(oVal).ToString().ToUpper(), key.GetValue(oVal).ToString());
+							}
+							catch { } // Used to ignore exceptions
 						}
 					}
 					Console.WriteLine();
@@ -133,17 +145,27 @@ namespace SharpSvc
 						{
 							Console.WriteLine("{0}\\{1}", KeyName, oSubKey);
 						}
-						var skey = hive.OpenSubKey(KeyName + "\\" + oSubKey);
-						foreach (string osVal in skey.GetValueNames())
+						try
 						{
-							if (osVal.Contains(SearchTeam) || skey.GetValue(osVal).ToString().Contains(SearchTeam))
+							var skey = hive.OpenSubKey(KeyName + "\\" + oSubKey);
+							foreach (string osVal in skey.GetValueNames())
 							{
-								Console.WriteLine("{0}\\{1}", KeyName, oSubKey);
-								Console.WriteLine("\n    {0}    REG_{1}    {2}", osVal, skey.GetValueKind(osVal).ToString().ToUpper(), skey.GetValue(osVal).ToString());
+								try
+								{
+									if (osVal.Contains(SearchTeam) || skey.GetValue(osVal).ToString().Contains(SearchTeam))
+									{
+										Console.WriteLine("{0}\\{1}", KeyName, oSubKey);
+										Console.WriteLine("\n    {0}    REG_{1}    {2}", osVal, skey.GetValueKind(osVal).ToString().ToUpper(), skey.GetValue(osVal).ToString());
+									}
+								}
+								catch { } // Used to ignore exceptions
 							}
 						}
+						catch { } // Used to ignore exceptions
 					}
 					Console.WriteLine();
+					hive.Close();
+					return;
 				}
 				else
 				{
@@ -157,9 +179,9 @@ namespace SharpSvc
 					{
 						Console.WriteLine("\n    {0}    REG_{1}    {2}", ValueName, key.GetValueKind(ValueName).ToString().ToUpper(), key.GetValue(ValueName).ToString());
 					}
-
+					hive.Close();
+					return;
 				}
-				hive.Close();
 			}
 			catch (Exception e)
 			{
@@ -184,29 +206,47 @@ namespace SharpSvc
 				RegistryKey NewKey = hive.CreateSubKey(KeyName);
 				if (DataType.ToUpper() == "SZ")
 				{
-					NewKey.SetValue(ValueName, ValueData);
+					NewKey.SetValue(ValueName, ValueData, RegistryValueKind.String);
 					Console.WriteLine("\nThe add opetation of {0} was successful.", KeyName);
+					hive.Close();
+					return;
 				}
-				if (DataType.ToUpper() == "EXPAND_SZ")
+				else if (DataType.ToUpper() == "EXPAND_SZ")
 				{
 					NewKey.SetValue(ValueName, ValueData, RegistryValueKind.ExpandString);
 					Console.WriteLine("\nThe add opetation of {0} was successful.", KeyName);
+					hive.Close();
+					return;
+				}
+				else if (DataType.ToUpper() == "MULTI_SZ")
+				{
+					//NewKey.SetValue(ValueName, ValueData, RegistryValueKind.MultiString);
+					//Console.WriteLine("\nThe add opetation of {0} was successful.", KeyName);
+					Console.WriteLine("\nMulti-String feature is not implemented yet.");
+					hive.Close();
+					return;
 				}
 				else if (DataType.ToUpper() == "DWORD")
 				{
-					NewKey.SetValue(ValueName, int.Parse(ValueData));
+					NewKey.SetValue(ValueName, int.Parse(ValueData), RegistryValueKind.DWord);
 					Console.WriteLine("\nThe add opetation of {0} was successful.", KeyName);
+					hive.Close();
+					return;
 				}
 				else if (DataType.ToUpper() == "QWORD")
 				{
 					NewKey.SetValue(ValueName, int.Parse(ValueData), RegistryValueKind.QWord);
 					Console.WriteLine("\nThe add opetation of {0} was successful.", KeyName);
+					hive.Close();
+					return;
 				}
 				else if (DataType.ToUpper() == "BINARY")
 				{
 					byte[] ValueByte = System.Text.Encoding.ASCII.GetBytes(ValueData);
-					NewKey.SetValue(ValueName, ValueByte);
+					NewKey.SetValue(ValueName, ValueByte, RegistryValueKind.Binary);
 					Console.WriteLine("\nThe add opetation of {0} was successful.", KeyName);
+					hive.Close();
+					return;
 				}
 				else
 				{
@@ -239,10 +279,13 @@ namespace SharpSvc
 					{
 						hive.DeleteSubKey(KeyName);
 						Console.WriteLine("\nThe delete opetation of {0} was successful.", KeyName);
+						hive.Close();
+						return;
 					}
 					catch (Exception e)
 					{
 						Console.WriteLine("\n [!] {0}: {1}", e.GetType().Name, e.Message);
+						hive.Close();
 						return;
 					}
 
@@ -253,10 +296,13 @@ namespace SharpSvc
 					{
 						hive.OpenSubKey(KeyName, true).DeleteValue(ValueName);
 						Console.WriteLine("\nThe delete opetation of {0} was successful.", ValueName);
+						hive.Close();
+						return;
 					}
 					catch (Exception e)
 					{
 						Console.WriteLine("\n [!] {0}: {1}", e.GetType().Name, e.Message);
+						hive.Close();
 						return;
 					}
 				}
