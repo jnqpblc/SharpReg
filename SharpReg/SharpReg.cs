@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Net;
 using Microsoft.Win32;
@@ -18,12 +18,20 @@ namespace SharpSvc
 				printUsage();
 			}
 
-			if ((args[0].ToUpper() == "--QUERY") && (args.Length == 4))
+			if ((args[0].ToUpper() == "--QUERY") && (args.Length >= 4))
 			{
 				string Computer = args[1];
 				string KeyName = args[2];
 				string ValueName = args[3];
-				Query(Computer, KeyName, ValueName);
+				if (args.Length == 5)
+				{
+					string SearchTeam = args[4];
+					Query(Computer, KeyName, ValueName, SearchTeam);
+				}
+				else
+				{
+					Query(Computer, KeyName, ValueName, null);
+				}
 			}
 			else if ((args[0].ToUpper() == "--ADD") && (args.Length == 6))
 			{
@@ -49,13 +57,13 @@ namespace SharpSvc
 
 		static void printUsage()
 		{
-			Console.WriteLine("\n[-] Usage: \n\t--Query <Computer|local|hostname|ip> <KeyName|SOFTWARE\\Microsoft\\Policies> <ValueName|all|ScriptBlockLogging>\n" +
-				"\n\t--Add <Computer|local|hostname|ip> <KeyName|SOFTWARE\\Microsoft\\Policies> <DataType|SZ|DWORD|BINARY> <ValueName|YourValueName> <ValueData|YourValueData>\n" +
+			Console.WriteLine("\n[-] Usage: \n\t--Query <Computer|local|hostname|ip> <KeyName|SOFTWARE\\Microsoft\\Policies> <ValueName|count|all|recurse|grep|ScriptBlockLogging> <grep search term>\n" +
+				"\n\t--Add <Computer|local|hostname|ip> <KeyName|SOFTWARE\\Microsoft\\Policies> <DataType|SZ|EXPAND_SZ|DWORD|QWORD|BINARY> <ValueName|YourValueName> <ValueData|YourValueData>\n" +
 				"\n\t--Delete <Computer|local|hostname|ip> <KeyName|SOFTWARE\\Microsoft\\Policies> <ValueName|all|ScriptBlockLogging>\n");
 			System.Environment.Exit(1);
 		}
 
-		static void Query(string Computer, string KeyName, string ValueName)
+		static void Query(string Computer, string KeyName, string ValueName, string SearchTeam)
 		{
 			try
 			{
@@ -69,6 +77,12 @@ namespace SharpSvc
 					hive = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default);
 				}
 				var key = hive.OpenSubKey(KeyName);
+				if (ValueName.ToUpper() == "COUNT")
+				{
+					// Counts some but fails on the below, if it finds a space in the name?
+					// [!] IOException: The specified registry key does not exist.
+					Console.WriteLine("\nThere are {0} subkeys under {1}.", key.SubKeyCount.ToString(), key.Name);
+				}
 				if (ValueName.ToUpper() == "ALL")
 				{
 					Console.WriteLine();
@@ -102,6 +116,35 @@ namespace SharpSvc
 						Console.WriteLine();
 					}
 				}
+				else if (ValueName.ToUpper() == "GREP")
+				{
+					Console.WriteLine();
+					foreach (string oVal in key.GetValueNames())
+					{
+						if (oVal.Contains(SearchTeam))
+						{
+							Console.WriteLine("    {0}    REG_{1}    {2}", oVal, key.GetValueKind(oVal).ToString().ToUpper(), key.GetValue(oVal).ToString());
+						}
+					}
+					Console.WriteLine();
+					foreach (string oSubKey in key.GetSubKeyNames())
+					{
+						if (oSubKey.Contains(SearchTeam))
+						{
+							Console.WriteLine("{0}\\{1}", KeyName, oSubKey);
+						}
+						var skey = hive.OpenSubKey(KeyName + "\\" + oSubKey);
+						foreach (string osVal in skey.GetValueNames())
+						{
+							if (osVal.Contains(SearchTeam) || skey.GetValue(osVal).ToString().Contains(SearchTeam))
+							{
+								Console.WriteLine("{0}\\{1}", KeyName, oSubKey);
+								Console.WriteLine("\n    {0}    REG_{1}    {2}", osVal, skey.GetValueKind(osVal).ToString().ToUpper(), skey.GetValue(osVal).ToString());
+							}
+						}
+					}
+					Console.WriteLine();
+				}
 				else
 				{
 					if (key.GetValueKind(ValueName).ToString().ToUpper() == "BINARY")
@@ -120,7 +163,7 @@ namespace SharpSvc
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("{0}: {1}", e.GetType().Name, e.Message);
+				Console.WriteLine("\n [!] {0}: {1}", e.GetType().Name, e.Message);
 				return;
 			}
 		}
@@ -142,20 +185,37 @@ namespace SharpSvc
 				if (DataType.ToUpper() == "SZ")
 				{
 					NewKey.SetValue(ValueName, ValueData);
+					Console.WriteLine("\nThe add opetation of {0} was successful.", KeyName);
+				}
+				if (DataType.ToUpper() == "EXPAND_SZ")
+				{
+					NewKey.SetValue(ValueName, ValueData, RegistryValueKind.ExpandString);
+					Console.WriteLine("\nThe add opetation of {0} was successful.", KeyName);
 				}
 				else if (DataType.ToUpper() == "DWORD")
 				{
 					NewKey.SetValue(ValueName, int.Parse(ValueData));
+					Console.WriteLine("\nThe add opetation of {0} was successful.", KeyName);
+				}
+				else if (DataType.ToUpper() == "QWORD")
+				{
+					NewKey.SetValue(ValueName, int.Parse(ValueData), RegistryValueKind.QWord);
+					Console.WriteLine("\nThe add opetation of {0} was successful.", KeyName);
 				}
 				else if (DataType.ToUpper() == "BINARY")
 				{
 					byte[] ValueByte = System.Text.Encoding.ASCII.GetBytes(ValueData);
 					NewKey.SetValue(ValueName, ValueByte);
+					Console.WriteLine("\nThe add opetation of {0} was successful.", KeyName);
+				}
+				else
+				{
+					printUsage();
 				}
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("{0}: {1}", e.GetType().Name, e.Message);
+				Console.WriteLine(" [!] {0}: {1}", e.GetType().Name, e.Message);
 				return;
 			}
 		}
@@ -182,7 +242,7 @@ namespace SharpSvc
 					}
 					catch (Exception e)
 					{
-						Console.WriteLine("\n{0}: {1}", e.GetType().Name, e.Message);
+						Console.WriteLine("\n [!] {0}: {1}", e.GetType().Name, e.Message);
 						return;
 					}
 
@@ -196,7 +256,7 @@ namespace SharpSvc
 					}
 					catch (Exception e)
 					{
-						Console.WriteLine("\n{0}: {1}", e.GetType().Name, e.Message);
+						Console.WriteLine("\n [!] {0}: {1}", e.GetType().Name, e.Message);
 						return;
 					}
 				}
@@ -207,7 +267,7 @@ namespace SharpSvc
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("{0}: {1}", e.GetType().Name, e.Message);
+				Console.WriteLine("\n [!] {0}: {1}", e.GetType().Name, e.Message);
 				return;
 			}
 		}
