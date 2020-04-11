@@ -49,9 +49,9 @@ namespace SharpSvc
 
 		static void printUsage()
 		{
-			Console.WriteLine("\n[-] Usage: \n\t--Query <Computer|local|hostname|ip> <KeyName|HKLM\\SOFTWARE\\Microsoft\\Policies> <ValueName|all|ScriptBlockLogging>\n" +
-				"\n\t--Add <Computer|local|hostname|ip> <KeyName|HKLM\\SOFTWARE\\Microsoft\\Policies> <DataType|SZ|DWORD|BINARY> <ValueName|YourValueName> <ValueData|YourValueData>\n" +
-				"\n\t--Delete <Computer|local|hostname|ip> <KeyName|HKLM\\SOFTWARE\\Microsoft\\Policies> <ValueName|all|ScriptBlockLogging>\n");
+			Console.WriteLine("\n[-] Usage: \n\t--Query <Computer|local|hostname|ip> <KeyName|SOFTWARE\\Microsoft\\Policies> <ValueName|all|ScriptBlockLogging>\n" +
+				"\n\t--Add <Computer|local|hostname|ip> <KeyName|SOFTWARE\\Microsoft\\Policies> <DataType|SZ|DWORD|BINARY> <ValueName|YourValueName> <ValueData|YourValueData>\n" +
+				"\n\t--Delete <Computer|local|hostname|ip> <KeyName|SOFTWARE\\Microsoft\\Policies> <ValueName|all|ScriptBlockLogging>\n");
 			System.Environment.Exit(1);
 		}
 
