@@ -5,9 +5,9 @@ SharpReg is a simple code set to interact with the Remote Registry service API u
 C:>SharpReg.exe
 
 [-] Usage:
-        --Query <Computer|local|hostname|ip> <KeyName|HKLM\SOFTWARE\Microsoft\Policies> <ValueName|all|ScriptBlockLogging>
+        --Query <Computer|local|hostname|ip> <KeyName|SOFTWARE\Microsoft\Policies> <ValueName|all|ScriptBlockLogging>
 
-        --Add <Computer|local|hostname|ip> <KeyName|HKLM\SOFTWARE\Microsoft\Policies> <DataType|SZ|DWORD|BINARY> <ValueName|YourValueName> <ValueData|YourValueData>
+        --Add <Computer|local|hostname|ip> <KeyName|SOFTWARE\Microsoft\Policies> <DataType|SZ|DWORD|BINARY> <ValueName|YourValueName> <ValueData|YourValueData>
 
-        --Delete <Computer|local|hostname|ip> <KeyName|HKLM\SOFTWARE\Microsoft\Policies> <ValueName|all|ScriptBlockLogging>
+        --Delete <Computer|local|hostname|ip> <KeyName|SOFTWARE\Microsoft\Policies> <ValueName|all|ScriptBlockLogging>
 ```
