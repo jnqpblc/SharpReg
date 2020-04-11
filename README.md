@@ -132,3 +132,40 @@ Z:\jnqpblc\SharpReg\SharpReg\bin\Debug>SharpReg.exe --Query local SYSTEM\Current
     ImagePath    REG_EXPANDSTRING    "C:\Program Files\Google\Update\GoogleUpdate.exe" /medsvc
 
 ```
+
+Searching for DLLs...
+```
+Z:\jnqpblc\SharpReg\SharpReg\bin\Debug>SharpReg.exe --Query local System\CurrentControlSet\Control grep ".dll"
+
+
+System\CurrentControlSet\Control\AppReadiness
+
+    DllName    REG_EXPANDSTRING    C:\Windows\system32\AppReadiness.dll
+System\CurrentControlSet\Control\FileSystemUtilities
+
+    IfsUtilExtension    REG_STRING    ifsutilx.dll
+System\CurrentControlSet\Control\Print
+
+    ConfigModule    REG_STRING    PrintConfig.dll
+System\CurrentControlSet\Control\RetailDemo
+
+    DllName    REG_EXPANDSTRING    C:\Windows\system32\RDXService.dll
+System\CurrentControlSet\Control\SecurityProviders
+
+    SecurityProviders    REG_STRING    credssp.dll
+System\CurrentControlSet\Control\SrpExtensionConfig
+
+    ExtensionDll    REG_EXPANDSTRING    C:\Windows\system32\appidapi.dll
+System\CurrentControlSet\Control\TimeZoneInformation
+
+    DaylightName    REG_STRING    @tzres.dll,-161
+System\CurrentControlSet\Control\TimeZoneInformation
+
+    StandardName    REG_STRING    @tzres.dll,-162
+System\CurrentControlSet\Control\WalletService
+
+    DllName    REG_EXPANDSTRING    C:\Windows\system32\walletservice.dll
+System\CurrentControlSet\Control\WOW
+
+    KnownDLLs    REG_STRING    comm.drv commdlg.dll ctl3dv2.dll ddeml.dll keyboard.drv lanman.drv mmsystem.dll mouse.drv netapi.dll olecli.dll olesvr.dll pmspl.dll shell.dll sound.drv system.drv toolhelp.dll vga.drv wfwnet.drv win87em.dll winoldap.mod winsock.dll winspool.exe wowdeb.exe timer.drv compobj.dll storage.dll ole2.dll ole2disp.dll ole2nls.dll typelib.dll msvideo.dll avifile.dll msacm.dll mciavi.drv mciseq.drv mciwave.drv progman.exe avicap.dll mapi.dll
+```
