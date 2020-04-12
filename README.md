@@ -2,7 +2,7 @@
 SharpReg is a simple code set to interact with the Remote Registry service API using the same SMB process as reg.exe, which uses TCP port 445. This code is compatible with Cobalt Strike.
 
 ```
-Z:>SharpReg.exe
+Z:\>SharpReg.exe
 
 [-] Usage:
         --Query <Computer|local|hostname|ip> <KeyName|SOFTWARE\Microsoft\Policies> <ValueName|count|all|recurse|grep|ScriptBlockLogging> <SearchTeam|Grep() Only|E.g. "Google">
