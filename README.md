@@ -172,7 +172,7 @@ System\CurrentControlSet\Control\WOW
 
 Hunting persistent spaces in svchosts.exe
 ```
-Z:\jcartrett\redteam\jnqpblc\SharpReg\SharpReg\bin\Debug>SharpReg.exe --Persist local netsvcs
+Z:\jnqpblc\SharpReg\SharpReg\bin\Debug>SharpReg.exe --Persist local netsvcs
 
  Empty Parking Spaces Within Svchost:
 
