@@ -3,6 +3,9 @@ using System.IO;
 using System.Net;
 using Microsoft.Win32;
 using System.Runtime.InteropServices;
+using System.Security.AccessControl;
+using System.Security.Principal;
+using System.Linq;
 
 namespace SharpSvc
 {
@@ -49,6 +52,12 @@ namespace SharpSvc
 				string ValueName = args[3];
 				Delete(Computer, KeyName, ValueName);
 			}
+			else if ((args[0].ToUpper() == "--PERSIST") && (args.Length == 3))
+			{
+				string Computer = args[1];
+				string ValueName = args[2];
+				Persist(Computer, ValueName);
+			}
 			else
 			{
 				printUsage();
@@ -59,7 +68,8 @@ namespace SharpSvc
 		{
 			Console.WriteLine("\n[-] Usage: \n\t--Query <Computer|local|hostname|ip> <KeyName|SOFTWARE\\Microsoft\\Policies> <ValueName|count|all|recurse|grep|ScriptBlockLogging> <SearchTeam|Grep() Only|E.g. \"Google\">\n" +
 				"\n\t--Add <Computer|local|hostname|ip> <KeyName|SOFTWARE\\Microsoft\\Policies> <DataType|SZ|EXPAND_SZ|DWORD|QWORD|BINARY> <ValueName|YourValueName> <ValueData|YourValueData>\n" +
-				"\n\t--Delete <Computer|local|hostname|ip> <KeyName|SOFTWARE\\Microsoft\\Policies> <ValueName|all|ScriptBlockLogging>\n");
+				"\n\t--Delete <Computer|local|hostname|ip> <KeyName|SOFTWARE\\Microsoft\\Policies> <ValueName|all|ScriptBlockLogging>\n" +
+				"\n\t--Persist <Computer|local|hostname|ip> <ValueName|netsvcs>\n");
 			System.Environment.Exit(1);
 		}
 
@@ -79,7 +89,7 @@ namespace SharpSvc
 				var key = hive.OpenSubKey(KeyName);
 				if (ValueName.ToUpper() == "COUNT")
 				{
-					try 
+					try
 					{
 						Console.WriteLine("\nThere are {0} subkeys under {1}.", key.SubKeyCount.ToString(), key.Name);
 						hive.Close();
@@ -87,7 +97,27 @@ namespace SharpSvc
 					}
 					catch { } // Used to ignore exceptions
 				}
-				if (ValueName.ToUpper() == "ALL")
+				else if (ValueName.ToUpper() == "PERMS")
+				{
+					try
+					{
+						RegistrySecurity registrySecurity = key.GetAccessControl();
+						Console.WriteLine("\n{0}\n", key.Name);
+						Console.WriteLine("[*] None:\n{0}\n", registrySecurity.GetSecurityDescriptorSddlForm(AccessControlSections.None));
+						Console.WriteLine("[*] Audit:\n{0}\n", registrySecurity.GetSecurityDescriptorSddlForm(AccessControlSections.Audit));
+						Console.WriteLine("[*] Access:\n{0}\n", registrySecurity.GetSecurityDescriptorSddlForm(AccessControlSections.Access));
+						Console.WriteLine("[*] Group:\n{0}\n", registrySecurity.GetSecurityDescriptorSddlForm(AccessControlSections.Group));
+						var rules = registrySecurity.GetAccessRules(true, true, typeof(System.Security.Principal.NTAccount));
+						foreach (var rule in rules.Cast<AuthorizationRule>())
+						{
+							Console.WriteLine("{0}", rule.IdentityReference.Value);
+						}
+						hive.Close();
+						return;
+					}
+					catch { } // Used to ignore exceptions
+				}
+				else if (ValueName.ToUpper() == "ALL")
 				{
 					Console.WriteLine();
 					foreach (string oVal in key.GetValueNames())
@@ -154,7 +184,7 @@ namespace SharpSvc
 								{
 									if (osVal.Contains(SearchTeam) || skey.GetValue(osVal).ToString().Contains(SearchTeam))
 									{
-										Console.WriteLine("{0}\\{1}", KeyName, oSubKey);
+										Console.WriteLine("\n{0}\\{1}", KeyName, oSubKey);
 										Console.WriteLine("\n    {0}    REG_{1}    {2}", osVal, skey.GetValueKind(osVal).ToString().ToUpper(), skey.GetValue(osVal).ToString());
 									}
 								}
@@ -174,6 +204,15 @@ namespace SharpSvc
 						byte[] BinData = (byte[])key.GetValue(ValueName);
 						string BinString = BitConverter.ToString(BinData).Replace("-", ""); ;
 						Console.WriteLine("\n    {0}    REG_{1}    {2}", ValueName, key.GetValueKind(ValueName).ToString().ToUpper(), BinString.ToString());
+					}
+					else if (key.GetValueKind(ValueName).ToString().ToUpper() == "MULTISTRING")
+					{
+						Console.WriteLine();
+						string[] tArray = (string[])key.GetValue(ValueName);
+						for (int i = 0; i < tArray.Length; i++)
+						{
+							Console.WriteLine("    {0}    REG_{1}    {2}", ValueName, key.GetValueKind(ValueName).ToString().ToUpper(), tArray[i]);
+						}
 					}
 					else
 					{
@@ -255,7 +294,7 @@ namespace SharpSvc
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(" [!] {0}: {1}", e.GetType().Name, e.Message);
+				Console.WriteLine("\n [!] {0}: {1}", e.GetType().Name, e.Message);
 				return;
 			}
 		}
@@ -317,5 +356,60 @@ namespace SharpSvc
 				return;
 			}
 		}
+
+		static void Persist(string Computer, string ValueName)
+		{
+			try
+			{
+				RegistryKey hive;
+				if (Computer.ToUpper() != "LOCAL")
+				{
+					hive = RegistryKey.OpenRemoteBaseKey(RegistryHive.LocalMachine, Computer, RegistryView.Default);
+				}
+				else
+				{
+					hive = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default);
+				}
+				if (ValueName.ToUpper() == "NETSVCS")
+				{
+					Console.WriteLine("\n Empty Parking Spaces Within Svchost:\n");
+					var nkey = hive.OpenSubKey(@"Software\Microsoft\Windows NT\CurrentVersion\SvcHost");
+					string[] tArray = (string[])nkey.GetValue(ValueName);
+					for (int i = 0; i < tArray.Length; i++)
+					{
+						if (hive.OpenSubKey(@"System\CurrentControlSet\Services\" + tArray[i]) == null)
+						{
+							Console.WriteLine(" [+] {0}", tArray[i]);
+						}
+					}
+
+					Console.WriteLine("\n Unlocked Cars Owned By Svchost:\n");
+					for (int i = 0; i < tArray.Length; i++)
+					{
+						try
+						{
+							var skey = hive.OpenSubKey(@"System\CurrentControlSet\Services\" + tArray[i]);
+							if ((int)skey.GetValue("Start") == 3) // Indicates that the service is started only manually
+							{
+								Console.WriteLine(" [+] {0}", tArray[i]);
+							}
+						}
+						catch { } // Used to ignore exceptions
+					}
+					hive.Close();
+					return;
+				}
+				else
+				{
+					return;
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("\n [!] {0}: {1}", e.GetType().Name, e.Message);
+				return;
+			}
+		}
+
 	}
 }
