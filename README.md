@@ -130,7 +130,6 @@ The add opetation of SYSTEM\CurrentControlSet\Services\gupdatem was successful.
 Z:\jnqpblc\SharpReg\SharpReg\bin\Debug>SharpReg.exe --Query local SYSTEM\CurrentControlSet\Services\gupdatem ImagePath
 
     ImagePath    REG_EXPANDSTRING    "C:\Program Files\Google\Update\GoogleUpdate.exe" /medsvc
-
 ```
 
 Searching for DLLs...
