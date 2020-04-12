@@ -169,3 +169,61 @@ System\CurrentControlSet\Control\WOW
 
     KnownDLLs    REG_STRING    comm.drv commdlg.dll ctl3dv2.dll ddeml.dll keyboard.drv lanman.drv mmsystem.dll mouse.drv netapi.dll olecli.dll olesvr.dll pmspl.dll shell.dll sound.drv system.drv toolhelp.dll vga.drv wfwnet.drv win87em.dll winoldap.mod winsock.dll winspool.exe wowdeb.exe timer.drv compobj.dll storage.dll ole2.dll ole2disp.dll ole2nls.dll typelib.dll msvideo.dll avifile.dll msacm.dll mciavi.drv mciseq.drv mciwave.drv progman.exe avicap.dll mapi.dll
 ```
+
+Hunting persistent spaces in svchosts.exe
+```
+Z:\jcartrett\redteam\jnqpblc\SharpReg\SharpReg\bin\Debug>SharpReg.exe --Persist local netsvcs
+
+ Empty Parking Spaces Within Svchost:
+
+ [+] FastUserSwitchingCompatibility
+ [+] Ias
+ [+] Nla
+ [+] Ntmssvc
+ [+] NWCWorkstation
+ [+] Nwsapagent
+ [+] SRService
+ [+] Wmi
+ [+] WmdmPmSp
+ [+] LogonHours
+ [+] PCAudit
+ [+] helpsvc
+ [+] uploadmgr
+
+ Unlocked Cars Owned By Svchost:
+
+ [+] CertPropSvc
+ [+] SCPolicySvc
+ [+] seclogon
+ [+] AppInfo
+ [+] msiscsi
+ [+] EapHost
+ [+] browser
+ [+] SessionEnv
+ [+] wercplsupport
+ [+] XblGameSave
+ [+] DcpSvc
+ [+] RetailDemo
+ [+] dmwappushservice
+ [+] BDESVC
+ [+] DmEnrollmentSvc
+ [+] DsmSvc
+ [+] NcaSvc
+ [+] XboxNetApiSvc
+ [+] lfsvc
+ [+] Irmon
+ [+] Rasauto
+ [+] Rasman
+ [+] Sharedaccess
+ [+] Tapisrv
+ [+] wuauserv
+ [+] BITS
+ [+] AppMgmt
+ [+] wisvc
+ [+] UsoSvc
+ [+] wlidsvc
+ [+] NetSetupSvc
+ [+] XblAuthManager
+ 
+It's all about the ServiceDll. ;)
+```
